@@ -5,54 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>VFF | Image Library</title>
   <style>
-    :root { --bg: #050505; --acc: #3b82f6; --txt: #ffffff; }
-    body { background: var(--bg); color: var(--txt); font-family: 'Inter', sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+    :root { --bg: #050505; --acc: #6366f1; --txt: #ffffff; }
+    body { background: var(--bg); color: var(--txt); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
     
     header { padding: 30px; text-align: center; }
-    .logo { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; color: var(--acc); }
+    .logo { font-size: 2.2rem; font-weight: 900; color: var(--acc); text-transform: uppercase; }
 
-    .container { width: 92%; max-width: 600px; }
+    .container { width: 92%; max-width: 500px; }
 
     .display-card { 
       width: 100%; 
-      aspect-ratio: 16/9; 
+      aspect-ratio: 1/1; 
       background: #111; 
-      border-radius: 16px; 
+      border-radius: 20px; 
       margin-bottom: 25px; 
       display: flex; 
       align-items: center; 
       justify-content: center; 
       overflow: hidden; 
       border: 1px solid #222;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      position: relative;
     }
     
-    #res-img { width: 100%; height: 100%; object-fit: cover; display: none; transition: 0.5s ease; }
-    .loader { display: none; width: 30px; height: 30px; border: 3px solid #333; border-top-color: var(--acc); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    #res-img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .loader { display: none; width: 40px; height: 40px; border: 4px solid #222; border-top-color: var(--acc); border-radius: 50%; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .search-box { display: flex; gap: 10px; background: #1a1a1a; padding: 8px; border-radius: 14px; border: 1px solid #333; }
-    input { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 1rem; outline: none; }
-    button { background: var(--acc); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    button:active { transform: scale(0.96); }
+    .search-box { display: flex; flex-direction: column; gap: 12px; }
+    input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; font-size: 1rem; outline: none; }
+    input:focus { border-color: var(--acc); }
+    button { background: var(--acc); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; font-size: 1.1rem; }
+    button:disabled { opacity: 0.6; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="logo">VFF SEARCH</div>
-    <p style="color: #666; margin-top: 5px;">Millions of images, one click away.</p>
+    <div class="logo">VFF Image Finder</div>
+    <p style="color: #666;">Duniya ki koi bhi image dhoondhein</p>
   </header>
 
   <div class="container">
     <div class="display-card">
       <div class="loader" id="loader"></div>
-      <img id="res-img" src="" alt="Found Image">
-      <p id="msg" style="color: #444;">Type something to find image...</p>
+      <img id="res-img" src="" alt="VFF Result">
+      <p id="msg" style="color: #444; text-align: center; padding: 20px;">Describe image & click Promote</p>
     </div>
 
     <div class="search-box">
-      <input type="text" id="query" placeholder="Search (e.g. Nature, Cars, Space)">
+      <input type="text" id="query" placeholder="Search (e.g. Red Lamborghini, Galaxy, Tiger)">
       <button id="btn">Promote</button>
     </div>
   </div>
@@ -64,21 +65,22 @@
     const loader = document.getElementById('loader');
     const msg = document.getElementById('msg');
 
-    async function findImage() {
+    function findImage() {
       const val = input.value.trim();
       if(!val) return;
 
-      // Reset
+      // Reset UI
       img.style.display = "none";
       msg.style.display = "none";
       loader.style.display = "block";
       btn.disabled = true;
+      btn.innerText = "Searching...";
 
-      // Source: Unsplash Source (Free to use)
-      // Arbo-kharbo images ka rasta
-      const timestamp = new Date().getTime();
-      const imageUrl = `https://source.unsplash.com/featured/1600x900?${encodeURIComponent(val)}&sig=${timestamp}`;
+      // Pollinations AI ka naya aur stable rasta
+      const seed = Math.floor(Math.random() * 10000);
+      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(val)}?seed=${seed}&width=1024&height=1024&nologo=true`;
 
+      // Browser ko image load karne ka signal dena
       const tempImg = new Image();
       tempImg.src = imageUrl;
 
@@ -87,13 +89,15 @@
         img.style.display = "block";
         loader.style.display = "none";
         btn.disabled = false;
+        btn.innerText = "Promote";
       };
 
       tempImg.onerror = () => {
         loader.style.display = "none";
-        msg.innerText = "Image not found. Try another word.";
+        msg.innerText = "Error: Check your connection.";
         msg.style.display = "block";
         btn.disabled = false;
+        btn.innerText = "Promote";
       };
     }
 
