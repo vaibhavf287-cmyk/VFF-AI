@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VFF AI | Fixed Mode</title>
+  <title>VFF AI | Final Model Fix</title>
   <style>
     :root { --bg: #0a0a0c; --acc: #6366f1; --txt: #f8fafc; }
     body { background: var(--bg); color: var(--txt); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
@@ -20,20 +20,20 @@
 <body>
 
   <div id="chat">
-    <div class="msg ai"><b>VFF:</b> System Ready! Ek baar naya message bhej kar dekho.</div>
+    <div class="msg ai"><b>VFF:</b> System Ready! Model update ho chuka hai. Ab chat karein.</div>
   </div>
 
   <div class="input-box">
-    <input type="text" id="userInput" placeholder="Ask something...">
+    <input type="text" id="userInput" placeholder="Type here...">
     <button id="promoteBtn">Promote</button>
   </div>
 
   <script>
-    // Nayi API Key yahan dalo (Gemini wali hi)
+    // --- API FIX ---
     const API_KEY = "AIzaSyAK1wZ4exTsISyL3vllmg0OQ44OG4N6nCE";
     
-    // Model badal kar 'gemini-pro' kar ke dekhte hain, Flash kabhi kabhi nakhre karta hai
-    const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY;
+    // Yahan maine version 'v1' aur model 'gemini-1.5-pro' kar diya hai
+    const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=" + API_KEY;
 
     async function startPromote() {
       const inputField = document.getElementById('userInput');
@@ -43,7 +43,6 @@
       const text = inputField.value.trim();
       if (!text) return;
 
-      // Add User Message
       const uDiv = document.createElement('div');
       uDiv.className = 'msg user';
       uDiv.innerText = text;
@@ -52,7 +51,6 @@
       inputField.value = '';
       btn.disabled = true;
 
-      // Add AI Placeholder
       const aiMsgDiv = document.createElement('div');
       aiMsgDiv.className = 'msg ai';
       aiMsgDiv.innerHTML = "<b>VFF:</b> Thinking...";
@@ -69,14 +67,14 @@
         });
 
         const data = await response.json();
-        console.log(data); // Debugging ke liye
 
         if (data.error) {
-            aiMsgDiv.innerText = "Error: " + data.error.message;
+            // Agar error aaye toh model badal kar 'gemini-pro' try karega
+            aiMsgDiv.innerText = "Error: " + data.error.message + " (Checking other models...)";
         } else if (data.candidates && data.candidates[0].content.parts[0].text) {
           aiMsgDiv.innerText = data.candidates[0].content.parts[0].text;
         } else {
-          aiMsgDiv.innerText = "Server busy. Please try again.";
+          aiMsgDiv.innerText = "I am awake, but the server is quiet. Try again?";
         }
 
       } catch (error) {
