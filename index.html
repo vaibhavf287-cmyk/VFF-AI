@@ -3,46 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VFF Imagine | Ultra Fast</title>
+  <title>VFF Imagine | Final Fix</title>
   <style>
     :root { --bg: #0a0a0c; --acc: #6366f1; --txt: #f8fafc; }
     body { background: var(--bg); color: var(--txt); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-    
     header { padding: 2rem; text-align: center; }
     .logo { font-size: 2rem; font-weight: 800; background: linear-gradient(to right, #818cf8, #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    .container { width: 90%; max-width: 500px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; }
-
-    .image-box { width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #333; position: relative; }
+    .container { width: 90%; max-width: 500px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .image-box { width: 100%; aspect-ratio: 1/1; background: #000; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #333; }
     #output-img { width: 100%; height: 100%; object-fit: cover; display: none; }
-    
-    .loading-spinner { display: none; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--acc); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+    .spinner { display: none; border: 4px solid rgba(255,255,255,0.1); border-left-color: var(--acc); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
     .input-area { display: flex; flex-direction: column; gap: 12px; }
     input { background: #16161a; border: 1px solid #333; color: white; padding: 15px; border-radius: 10px; font-size: 1rem; outline: none; }
-    input:focus { border-color: var(--acc); }
-    
-    button { background: var(--acc); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    button:active { transform: scale(0.98); }
+    button { background: var(--acc); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    button:disabled { opacity: 0.5; }
   </style>
 </head>
 <body>
-
   <header>
     <div class="logo">VFF Imagine</div>
     <p style="color:#94a3b8;">Pollinations AI Power</p>
   </header>
-
   <div class="container">
-    <div class="image-box">
-      <div class="loading-spinner" id="spinner"></div>
-      <img id="output-img" src="" alt="AI Image">
-      <p id="placeholder" style="color:#444;">Tasveer yahan banegi...</p>
+    <div class="image-box" id="imgBox">
+      <div class="spinner" id="loader"></div>
+      <img id="output-img" alt="AI Image">
+      <p id="placeholder" style="color:#444;">Describe and click Generate</p>
     </div>
-
     <div class="input-area">
-      <input type="text" id="promptInput" placeholder="Describe your image (e.g. Iron man in India)">
+      <input type="text" id="promptInput" placeholder="e.g. A futuristic dog in space">
       <button id="genBtn">Generate Magic</button>
     </div>
   </div>
@@ -51,47 +41,44 @@
     const genBtn = document.getElementById('genBtn');
     const promptInput = document.getElementById('promptInput');
     const outputImg = document.getElementById('output-img');
-    const spinner = document.getElementById('spinner');
+    const loader = document.getElementById('loader');
     const placeholder = document.getElementById('placeholder');
 
-    function generate() {
+    async function generate() {
       const prompt = promptInput.value.trim();
-      if (!prompt) return alert("Kuch likho toh sahi!");
+      if (!prompt) return;
 
-      // UI Reset
-      spinner.style.display = "block";
+      // Reset UI
+      genBtn.disabled = true;
+      genBtn.innerText = "Painting...";
+      loader.style.display = "block";
       outputImg.style.display = "none";
       placeholder.style.display = "none";
-      genBtn.innerText = "Painting...";
-      genBtn.disabled = true;
 
-      // Pollinations Magic URL
-      // random seed isliye taaki har baar nayi image bane
-      const seed = Math.floor(Math.random() * 1000000);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?seed=${seed}&width=1024&height=1024&nologo=true`;
+      const seed = Math.floor(Math.random() * 99999);
+      const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=1024&height=1024&seed=${seed}&model=flux`;
 
-      // Image loading logic
-      const tempImg = new Image();
-      tempImg.src = imageUrl;
-      
-      tempImg.onload = () => {
-        outputImg.src = imageUrl;
+      // Naya tarika: Image object banakar check karna
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        outputImg.src = url;
         outputImg.style.display = "block";
-        spinner.style.display = "none";
-        genBtn.innerText = "Generate Magic";
+        loader.style.display = "none";
         genBtn.disabled = false;
+        genBtn.innerText = "Generate Magic";
       };
-
-      tempImg.onerror = () => {
-        alert("Oops! Kuch gadbad hui. Phir se try karein.");
-        spinner.style.display = "none";
+      img.onerror = () => {
+        loader.style.display = "none";
+        placeholder.innerText = "Error loading image. Try a different prompt.";
         placeholder.style.display = "block";
         genBtn.disabled = false;
+        genBtn.innerText = "Generate Magic";
       };
     }
 
     genBtn.onclick = generate;
-    promptInput.onkeypress = (e) => { if(e.key === 'Enter') generate(); };
+    promptInput.onkeydown = (e) => { if(e.key === 'Enter') generate(); };
   </script>
 </body>
 </html>
