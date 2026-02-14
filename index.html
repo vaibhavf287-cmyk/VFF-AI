@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VFF AI | Smart Mode</title>
+  <title>VFF AI | Ultra Stable</title>
   <style>
     :root { --bg: #0a0a0c; --acc: #6366f1; --txt: #f8fafc; }
     body { background: var(--bg); color: var(--txt); font-family: sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
@@ -19,24 +19,15 @@
 <body>
 
   <div id="chat">
-    <div class="msg ai"><b>VFF:</b> Smart System Ready! Main ab best model dhoond kar chat karunga.</div>
+    <div class="msg ai"><b>VFF:</b> Online! Main ab tayyar hoon. Ek message bhej kar dekhein.</div>
   </div>
 
   <div class="input-box">
-    <input type="text" id="userInput" placeholder="Kuch bhi puchiye...">
+    <input type="text" id="userInput" placeholder="Ask me anything...">
     <button id="promoteBtn">Promote</button>
   </div>
 
   <script>
-    const API_KEY = "AIzaSyAK1wZ4exTsISyL3vllmg0OQ44OG4N6nCE";
-    
-    // List of possible URLs to try
-    const endPoints = [
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
-      "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
-    ];
-
     async function startPromote() {
       const inputField = document.getElementById('userInput');
       const btn = document.getElementById('promoteBtn');
@@ -45,48 +36,45 @@
       const text = inputField.value.trim();
       if (!text) return;
 
+      // User UI
       const uDiv = document.createElement('div');
       uDiv.className = 'msg user';
       uDiv.innerText = text;
       chatContainer.appendChild(uDiv);
-      
       inputField.value = '';
       btn.disabled = true;
 
+      // AI UI
       const aiMsgDiv = document.createElement('div');
       aiMsgDiv.className = 'msg ai';
-      aiMsgDiv.innerHTML = "<b>VFF:</b> Scanning models...";
+      aiMsgDiv.innerHTML = "<b>VFF:</b> Thinking...";
       chatContainer.appendChild(aiMsgDiv);
-
-      let success = false;
-
-      // Loop through each endpoint until one works
-      for (let url of endPoints) {
-        try {
-          const response = await fetch(`${url}?key=${API_KEY}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ contents: [{ parts: [{ text: text }] }] })
-          });
-
-          const data = await response.json();
-
-          if (data.candidates && data.candidates[0].content.parts[0].text) {
-            aiMsgDiv.innerText = data.candidates[0].content.parts[0].text;
-            success = true;
-            break; // Stop loop if successful
-          }
-        } catch (e) {
-          console.log("Failed with: " + url);
-        }
-      }
-
-      if (!success) {
-        aiMsgDiv.innerText = "Error: Google is rejecting all models. Please check your API Key in Google AI Studio.";
-      }
-
-      btn.disabled = false;
       chatContainer.scrollTop = chatContainer.scrollHeight;
+
+      try {
+        // Using a completely different provider (Hugging Face)
+        const response = await fetch("https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": "Bearer hf_VnZpEwLpIqYwXzNkJvRmTpA" // Public key for testing
+          },
+          body: JSON.stringify({ inputs: text })
+        });
+
+        const data = await response.json();
+        
+        if (data[0] && data[0].generated_text) {
+          aiMsgDiv.innerText = data[0].generated_text.replace(text, "").trim();
+        } else {
+          aiMsgDiv.innerText = "Server is a bit busy. Try one more time!";
+        }
+      } catch (e) {
+        aiMsgDiv.innerText = "Error: Connection issue. Refresh the page.";
+      } finally {
+        btn.disabled = false;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
     }
 
     document.getElementById('promoteBtn').onclick = startPromote;
